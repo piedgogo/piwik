@@ -97,10 +97,19 @@ class Piwik_UserCountry_LocationProvider_GeoIp_Php extends Piwik_UserCountry_Loc
 	public function getLocation( $info )
 	{
 		$ip = $this->getIpFromInfo($info);
+		$isIPv6 = Piwik_IP::isIPv6($ip);
 		
 		$result = array();
 		
-		$locationGeoIp = $this->getGeoIpInstance($key = 'loc');
+		if($isIPv6)
+		{
+			$locationGeoIp = $this->getGeoIpInstance($key = 'locv6');
+		}
+		else
+		{
+			$locationGeoIp = $this->getGeoIpInstance($key = 'loc');
+		}
+
 		if ($locationGeoIp)
 		{
 			switch ($locationGeoIp->databaseType)
@@ -120,6 +129,19 @@ class Piwik_UserCountry_LocationProvider_GeoIp_Php extends Piwik_UserCountry_Loc
 						$result[self::POSTAL_CODE_KEY] = $location->postal_code;
 					}
 					break;
+				case GEOIP_CITY_EDITION_REV0_V6:
+				case GEOIP_CITY_EDITION_REV1_V6:
+					$location = geoip_record_by_addr_v6($locationGeoIp, $ip);
+					if (!empty($location))
+					{
+						$result[self::COUNTRY_CODE_KEY] = $location->country_code;
+						$result[self::REGION_CODE_KEY] = $location->region;
+						$result[self::CITY_NAME_KEY] = utf8_encode($location->city);
+						$result[self::AREA_CODE_KEY] = $location->area_code;
+						$result[self::LATITUDE_KEY] = $location->latitude;
+						$result[self::LONGITUDE_KEY] = $location->longitude;
+						$result[self::POSTAL_CODE_KEY] = $location->postal_code;
+					}
 				case GEOIP_REGION_EDITION_REV0: // region database type
 				case GEOIP_REGION_EDITION_REV1:
 					$location = geoip_region_by_addr($locationGeoIp, $ip);
@@ -131,6 +153,9 @@ class Piwik_UserCountry_LocationProvider_GeoIp_Php extends Piwik_UserCountry_Loc
 					break;
 				case GEOIP_COUNTRY_EDITION: // country database type
 					$result[self::COUNTRY_CODE_KEY] = geoip_country_code_by_addr($locationGeoIp, $ip);
+					break;
+				case GEOIP_COUNTRY_EDITION_V6: // country database type (IPv6)
+					$result[self::COUNTRY_CODE_KEY] = geoip_country_code_by_addr_v6($locationGeoIp, $ip);
 					break;
 				default: // unknown database type, log warning and fallback to country edition
 					Piwik::log(sprintf("Found unrecognized database type: %s", $locationGeoIp->databaseType));
@@ -240,6 +265,8 @@ class Piwik_UserCountry_LocationProvider_GeoIp_Php extends Piwik_UserCountry_Loc
 				case GEOIP_CITY_EDITION_REV0: // city database type
 				case GEOIP_CITY_EDITION_REV1:
 				case GEOIP_CITYCOMBINED_EDITION:
+				case GEOIP_CITY_EDITION_REV0_V6:
+				case GEOIP_CITY_EDITION_REV1_V6:
 					$result[self::REGION_CODE_KEY] = true;
 					$result[self::REGION_NAME_KEY] = true;
 					$result[self::CITY_NAME_KEY] = true;
@@ -298,13 +325,21 @@ class Piwik_UserCountry_LocationProvider_GeoIp_Php extends Piwik_UserCountry_Loc
 		{
 			$availableDatabaseTypes[] = Piwik_Translate('UserCountry_City');
 		}
+		if (self::getPathToGeoIpDatabase(array('GeoIPCityv6.dat', 'GeoLiteCityv6.dat')) !== false)
+		{
+			$availableDatabaseTypes[] = Piwik_Translate('UserCountry_City') . ' (IPv6)';
+		}
 		if (self::getPathToGeoIpDatabase(array('GeoIPRegion.dat')) !== false)
 		{
 			$availableDatabaseTypes[] = Piwik_Translate('UserCountry_Region');
 		}
-		if (self::getPathToGeoIpDatabase(array('GeoIPCountry.dat')) !== false)
+		if (self::getPathToGeoIpDatabase(array('GeoIPCountry.dat', 'GeoIP.dat')) !== false)
 		{
 			$availableDatabaseTypes[] = Piwik_Translate('UserCountry_Country');
+		}
+		if (self::getPathToGeoIpDatabase(array('GeoIPCountryv6.dat', 'GeoIPv6.dat')) !== false)
+		{
+			$availableDatabaseTypes[] = Piwik_Translate('UserCountry_Country') . ' (IPv6)';
 		}
 		if (self::getPathToGeoIpDatabase(array('GeoIPISP.dat')) !== false)
 		{

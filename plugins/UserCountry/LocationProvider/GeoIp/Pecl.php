@@ -53,7 +53,7 @@ class Piwik_UserCountry_LocationProvider_GeoIp_Pecl extends Piwik_UserCountry_Lo
 		// get location data
 		if (self::isCityDatabaseAvailable())
 		{
-			// Must hide errors because missing IPV6:
+			// Must hide errors in case of missing IPV6:
 			$location = @geoip_record_by_name($ip);
 			if (!empty($location))
 			{
@@ -255,6 +255,10 @@ class Piwik_UserCountry_LocationProvider_GeoIp_Pecl extends Piwik_UserCountry_Lo
 			{
 				$availableDatabaseTypes[] = Piwik_Translate('UserCountry_City');
 			}
+			if (self::isCityV6DatabaseAvailable())
+			{
+				$availableDatabaseTypes[] = Piwik_Translate('UserCountry_City') . ' (IPv6)';
+			}
 			if (self::isRegionDatabaseAvailable())
 			{
 				$availableDatabaseTypes[] = Piwik_Translate('UserCountry_Region');
@@ -262,6 +266,10 @@ class Piwik_UserCountry_LocationProvider_GeoIp_Pecl extends Piwik_UserCountry_Lo
 			if (self::isCountryDatabaseAvailable())
 			{
 				$availableDatabaseTypes[] = Piwik_Translate('UserCountry_Country');
+			}
+			if (self::isCountryV6DatabaseAvailable())
+			{
+				$availableDatabaseTypes[] = Piwik_Translate('UserCountry_Country') . ' (IPv6)';
 			}
 			if (self::isISPDatabaseAvailable())
 			{
@@ -309,6 +317,20 @@ class Piwik_UserCountry_LocationProvider_GeoIp_Pecl extends Piwik_UserCountry_Lo
 		return geoip_db_avail(GEOIP_CITY_EDITION_REV0)
 			|| geoip_db_avail(GEOIP_CITY_EDITION_REV1);
 	}
+
+	/**
+	 * Returns true if the PECL module can detect an IPv6 city database.
+	 *
+	 */
+	public static function isCityV6DatabaseAvailable()
+	{
+		// use defined() to fail gracefully if PECL module has no IPv6
+		// support
+		return (defined("GEOIP_CITY_EDITION_REV0_V6")
+			    || defined("GEOIP_CITY_EDITION_REV1_V6"))
+			&& (geoip_db_avail(GEOIP_CITY_EDITION_REV0_V6)
+			    || geoip_db_avail(GEOIP_CITY_EDITION_REV1_V6));
+	}
 	
 	/**
 	 * Returns true if the PECL module can detect a region database.
@@ -329,6 +351,17 @@ class Piwik_UserCountry_LocationProvider_GeoIp_Pecl extends Piwik_UserCountry_Lo
 	public static function isCountryDatabaseAvailable()
 	{
 		return geoip_db_avail(GEOIP_COUNTRY_EDITION);
+	}
+
+	/**
+	 * Returns true if the PECL module can detect an IPv6 country database.
+	 *
+	 * @return bool
+	 */
+	public static function isCountryV6DatabaseAvailable()
+	{
+		return defined("GEOIP_COUNTRY_EDITION_V6")
+			&& geoip_db_avail(GEOIP_COUNTRY_EDITION_V6);
 	}
 	
 	/**

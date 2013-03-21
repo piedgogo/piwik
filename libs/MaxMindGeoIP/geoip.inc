@@ -89,8 +89,12 @@ if (!defined("GEOIP_COUNTRY_EDITION_V6")) {
 define("GEOIP_LOCATIONA_EDITION", 13);
 define("GEOIP_ACCURACYRADIUS_EDITION", 14);
 define("GEOIP_CITYCOMBINED_EDITION", 15);
-define("GEOIP_CITY_EDITION_REV1_V6", 30);
-define("GEOIP_CITY_EDITION_REV0_V6",31);
+if (!defined("GEOIP_CITY_EDITION_REV1_V6")) {
+  define("GEOIP_CITY_EDITION_REV1_V6", 30);
+}
+if (!defined("GEOIP_CITY_EDITION_REV0_V6")) {
+  define("GEOIP_CITY_EDITION_REV0_V6",31);
+}
 define("GEOIP_NETSPEED_EDITION_REV1",32);
 define("GEOIP_NETSPEED_EDITION_REV1_V6",33);
 define("GEOIP_USERTYPE_EDITION",28);
@@ -453,12 +457,14 @@ function geoip_country_id_by_name($gi, $name) {
   return geoip_country_id_by_addr($gi, $addr);
 }
 
-function geoip_country_code_by_name_v6($gi, $name) {
-  $country_id = geoip_country_id_by_name_v6($gi,$name);
-  if ($country_id !== false) {
-        return $gi->GEOIP_COUNTRY_CODES[$country_id];
+if (!function_exists('geoip_country_code_by_name_v6')) { // added for Piwik
+  function geoip_country_code_by_name_v6($gi, $name) {
+    $country_id = geoip_country_id_by_name_v6($gi,$name);
+    if ($country_id !== false) {
+          return $gi->GEOIP_COUNTRY_CODES[$country_id];
+    }
+    return false;
   }
-  return false;
 }
 
 if (!function_exists('geoip_country_code_by_name')) { // added for Piwik
@@ -471,14 +477,15 @@ if (!function_exists('geoip_country_code_by_name')) { // added for Piwik
   }
 }
 
-function geoip_country_name_by_name_v6($gi, $name) {
-  $country_id = geoip_country_id_by_name_v6($gi,$name);
-  if ($country_id !== false) {
-        return $gi->GEOIP_COUNTRY_NAMES[$country_id];
+if (!function_exists('geoip_country_name_by_name_v6')) { // added for Piwik
+  function geoip_country_name_by_name_v6($gi, $name) {
+    $country_id = geoip_country_id_by_name_v6($gi,$name);
+    if ($country_id !== false) {
+          return $gi->GEOIP_COUNTRY_NAMES[$country_id];
+    }
+    return false;
   }
-  return false;
 }
-
 if (!function_exists('geoip_country_name_by_name')) { // added for Piwik
   function geoip_country_name_by_name($gi, $name) {
     $country_id = geoip_country_id_by_name($gi,$name);

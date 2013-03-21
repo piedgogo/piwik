@@ -61,6 +61,7 @@ class Piwik_UserCountry_LocationProvider_GeoIp_ServerBased extends Piwik_UserCou
 	public function getLocation( $info )
 	{
 		$ip = $this->getIpFromInfo($info);
+		$isIPv6 = Piwik_IP::isIPv6($ip);
 		
 		// geoip modules that are built into servers can't use a forced IP. in this case we try
 		// to fallback to another version.
@@ -94,6 +95,15 @@ class Piwik_UserCountry_LocationProvider_GeoIp_ServerBased extends Piwik_UserCou
 			if (!empty($_SERVER[$geoipVarName]))
 			{
 				$result[$resultKey] = $_SERVER[$geoipVarName];
+			}
+		}
+		if($isIPv6) {
+			foreach (self::$geoIpServerVars as $resultKey => $geoipVarName)
+			{
+				if (!empty($_SERVER[$geoipVarName . '_V6']))
+				{
+					$result[$resultKey] = $_SERVER[$geoipVarName . '_V6'];
+				}
 			}
 		}
 		foreach (self::$geoIpUtfServerVars as $resultKey => $geoipVarName)

@@ -464,8 +464,7 @@ abstract class Piwik_UserCountry_LocationProvider
 	
 	/**
 	 * Returns an IP address from an array that was passed into getLocation. This
-	 * will return an IPv4 address or false if the address is IPv6 (IPv6 is not
-	 * supported yet).
+	 * will return an IPv4 or IPv6 address.
 	 * 
 	 * @param array $ip Must have 'ip' key.
 	 * @return string|bool
@@ -476,10 +475,6 @@ abstract class Piwik_UserCountry_LocationProvider
 		if (Piwik_IP::isMappedIPv4($ip))
 		{
 			return Piwik_IP::getIPv4FromMappedIPv6($ip);
-		}
-		else if (Piwik_IP::isIPv6($ip)) // IPv6 is not supported (yet)
-		{
-			return false;
 		}
 		else
 		{

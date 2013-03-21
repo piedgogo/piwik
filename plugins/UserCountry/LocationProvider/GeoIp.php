@@ -30,6 +30,7 @@ abstract class Piwik_UserCountry_LocationProvider_GeoIp extends Piwik_UserCountr
 	 */
 	public static $dbNames = array(
 		'loc' => array('GeoIPCity.dat', 'GeoLiteCity.dat', 'GeoIP.dat'),
+		'locv6' => array('GeoIPCityv6.dat', 'GeoLiteCityv6.dat', 'GeoIPv6.dat'),
 		'isp' => array('GeoIPISP.dat'),
 		'org' => array('GeoIPOrg.dat'),
 	);
